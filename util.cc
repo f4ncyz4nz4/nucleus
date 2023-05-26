@@ -8,6 +8,15 @@
 #include <string>
 #include <random>
 
+u_int64_t
+charBufferToInt(const char *buffer, int size) {
+    u_int64_t result = 0;
+    for (int i = size - 1; i >= 0; i--) {
+        result <<= 8;
+        result |= static_cast<uint8_t>(buffer[i]);
+    }
+    return result;
+}
 
 /*******************************************************************************
  **                                string utils                               **

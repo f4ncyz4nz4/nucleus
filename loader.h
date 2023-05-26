@@ -50,7 +50,8 @@ public:
     BIN_TYPE_AUTO = 0,
     BIN_TYPE_RAW  = 1,
     BIN_TYPE_ELF  = 2,
-    BIN_TYPE_PE   = 3
+    BIN_TYPE_PE   = 3,
+    BIN_TYPE_DMP  = 4
   };
   enum BinaryArch {
     ARCH_NONE    = 0,
@@ -72,6 +73,7 @@ public:
   uint64_t             entry;
   std::vector<Section> sections;
   std::vector<Symbol>  symbols;
+
 };
 
 int  load_binary   (std::string &fname, Binary *bin, Binary::BinaryType type);

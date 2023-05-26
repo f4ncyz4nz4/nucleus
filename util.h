@@ -5,6 +5,8 @@
 
 #include <string>
 
+u_int64_t charBufferToInt(const char* buffer, int size);
+
 std::string str_realpath      (std::string s);
 std::string str_realpath_dir  (std::string s);
 std::string str_realpath_base (std::string s);

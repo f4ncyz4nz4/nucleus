@@ -92,7 +92,7 @@ parse_options(int argc, char *argv[])
   while((opt = getopt(argc, argv, optstr)) != -1) {
     switch(opt) {
     case 'v':
-      options.verbosity++;
+      options.verbosity = 1;
       break;
 
     case 'w':
