@@ -16,6 +16,7 @@
 
 #include "log.h"
 #include "options.h"
+#include "minidump.h"
 
 const char *binary_types_descr[][2] = {
         {"auto", "Try to automatically determine binary format (default)"},
@@ -467,7 +468,6 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
     bin->bits = options.binary.bits;
     bin->arch_str = std::string(binary_arch_descr[(int) options.binary.arch][0]);
     bin->entry = 0;
-    bin->entry = 0x401070;
 
     if (!bin->bits) {
         switch (bin->arch) {
@@ -478,8 +478,6 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
                 break;
         }
     }
-    bin->bits = 32;
-
 
     bin->sections.push_back(Section());
     sec = &bin->sections.back();
@@ -488,12 +486,10 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
     sec->name = std::string("raw");
     sec->type = Section::SEC_TYPE_CODE;
     sec->vma = options.binary.base_vma;
-    sec->vma = 0x401000;
 
     f = fopen(fname.c_str(), "rb");
     if (!f) {
-        print_err("failed to open binary '%s' (%s)", fname.c_str(),
-                  strerror(errno));
+        print_err("failed to open binary '%s' (%s)", fname.c_str(), strerror(errno));
         goto fail;
     }
 
@@ -505,15 +501,14 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
     }
 
     sec->size = (uint64_t) fsize;
-    sec->size = 0x3000;
-    sec->bytes = (uint8_t *) malloc(sec->size);
+    sec->bytes = (uint8_t *) malloc(fsize);
     if (!sec->bytes) {
         print_err("out of memory");
         goto fail;
     }
 
-    fseek(f, 0x6101d, SEEK_SET);
-    if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
+    fseek(f, 0L, SEEK_SET);
+    if (fread(sec->bytes, 1, fsize, f) != (size_t) fsize) {
         print_err("failed to read binary '%s'", fname.c_str());
         goto fail;
     }
@@ -539,10 +534,8 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
     Section *sec;
     char buffer[4];
     char buffer2[8];
-    std::string signature;
-    int version;
-    int implementationVersion;
-    int numberOfStreams, streamDirectoryRva, streamType, dataSize, rva;
+    Minidump dmp;
+    MinidumpDir dir;
     uint64_t numberOfMemoryRanges, baseRva;
 
     f = NULL;
@@ -558,29 +551,32 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
     bin->arch = options.binary.arch;
     bin->bits = options.binary.bits;
     bin->arch_str = std::string(binary_arch_descr[(int) options.binary.arch][0]);
-    bin->entry = 0;
     bin->entry = 0x401070;
 
     f = fopen(fname.c_str(), "rb");
+    if (!f) {
+        print_err("failed to open binary '%s' (%s)", fname.c_str(),
+                  strerror(errno));
+        goto fail;
+    }
 
     // Read the first 4 bytes into a buffer
     std::fread(buffer, sizeof(char), 4, f);
     // Convert the buffer to a string and reverse it
-    signature = std::string(buffer, 4);
+    dmp.signature = std::string(buffer, 4);
     // Output the reversed signature
-    std::reverse(signature.begin(), signature.end());
-    if (signature != "PMDM") {
+    std::reverse(dmp.signature.begin(), dmp.signature.end());
+    if (dmp.signature != "PMDM") {
         goto fail;
     }
     std::fread(buffer, sizeof(char), 2, f);
-    version = charBufferToInt(buffer, 2);
+    dmp.version = (int) charBufferToInt(buffer, 2);
     std::fread(buffer, sizeof(char), 2, f);
-    implementationVersion = charBufferToInt(buffer, 2);
+    dmp.implementationVersion = (int) charBufferToInt(buffer, 2);
     std::fread(buffer, sizeof(char), 4, f);
-    numberOfStreams = charBufferToInt(buffer, 4);
+    dmp.numberOfStreams = (int) charBufferToInt(buffer, 4);
     std::fread(buffer, sizeof(char), 4, f);
-    streamDirectoryRva = charBufferToInt(buffer, 4);
-    std::cout << "# of streams: " << numberOfStreams << std::endl;
+    dmp.streamDirectoryRva = (int) charBufferToInt(buffer, 4);
 
     if (!bin->bits) {
         switch (bin->arch) {
@@ -593,63 +589,26 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
     }
     bin->bits = 32;
 
-    for (int i = 0; i < numberOfStreams; i++) {
-        std::fseek(f, (streamDirectoryRva + i * 12), SEEK_SET);
+    for (int i = 0; i < dmp.numberOfStreams; i++) {
+        std::fseek(f, (dmp.streamDirectoryRva + i * 12), SEEK_SET);
         std::fread(buffer, sizeof(char), 4, f);
-        streamType = charBufferToInt(buffer, 4);
+        dir.streamType = (int) charBufferToInt(buffer, 4);
         std::fread(buffer, sizeof(char), 4, f);
-        dataSize = charBufferToInt(buffer, 4);
+        dir.dataSize = (int) charBufferToInt(buffer, 4);
         std::fread(buffer, sizeof(char), 4, f);
-        rva = charBufferToInt(buffer, 4);
-        std::cout << "Stream type: " << streamType << " " << rva << std::endl;
-        if (streamType == 5 || streamType == 9) {
-
-            //std::fseek(f, ((streamDirectoryRva - 1) * 12 + ((i + 1) * 32)), SEEK_SET);
-
-            std::fread(buffer2, sizeof(char), 8, f);
-            numberOfMemoryRanges = charBufferToInt(buffer2, 8);
-            std::fread(buffer2, sizeof(char), 8, f);
-            baseRva = charBufferToInt(buffer2, 8);
-            for (int j = 0; j < numberOfMemoryRanges; j++) {
-                bin->sections.push_back(Section());
-                sec = &bin->sections.back();
-
-                std::fread(buffer2, sizeof(char), 8, f);
-                sec->vma = charBufferToInt(buffer2, 8);
-                std::fread(buffer2, sizeof(char), 8, f);
-                sec->size = charBufferToInt(buffer2, 8);
-                sec->binary = bin;
-                sec->name = std::string("raw");
-                sec->type = Section::SEC_TYPE_CODE;
-                sec->bytes = (uint8_t *) malloc(sec->size);
-            }
-        }
+        dir.rva = (int) charBufferToInt(buffer, 4);
+        dmp.dirs.push_back(dir);
     }
 
-    if (!f) {
-        print_err("failed to open binary '%s' (%s)", fname.c_str(),
-                  strerror(errno));
-        goto fail;
+    for (MinidumpDir d: dmp.dirs) {
+        if (parse_directory(d, bin, f) < 0)
+            goto fail;
     }
 
     fseek(f, 0L, SEEK_END);
     fsize = ftell(f);
     if (fsize <= 0) {
         print_err("binary '%s' appears to be empty", fname.c_str());
-        goto fail;
-    }
-
-    sec->size = (uint64_t) fsize;
-    sec->size = 0x3000;
-    sec->bytes = (uint8_t *) malloc(sec->size);
-    if (!sec->bytes) {
-        print_err("out of memory");
-        goto fail;
-    }
-
-    fseek(f, 0x6101d, SEEK_SET);
-    if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
-        print_err("failed to read binary '%s'", fname.c_str());
         goto fail;
     }
 
