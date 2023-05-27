@@ -60,6 +60,6 @@ public:
     int rva;
 };
 
-int parse_directory(MinidumpDir d,Binary* b,FILE*f);
+int parse_directories(std::vector<MinidumpDir> dirs, Binary *b, FILE *f);
 
 #endif //NUCLEUS_MINIDUMP_H

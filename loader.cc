@@ -600,10 +600,7 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
         dmp.dirs.push_back(dir);
     }
 
-    for (MinidumpDir d: dmp.dirs) {
-        if (parse_directory(d, bin, f) < 0)
-            goto fail;
-    }
+    if (parse_directories(dmp.dirs, bin, f) < 0) { goto fail; }
 
     fseek(f, 0L, SEEK_END);
     fsize = ftell(f);
