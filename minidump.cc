@@ -20,7 +20,7 @@ int parse_directories(std::vector<MinidumpDir> dirs, Binary *b, FILE *f) {
             d.streamType == MinidumpDir::JavaScriptDataStream || d.streamType == MinidumpDir::ProcessVmCountersStream ||
             d.streamType == MinidumpDir::TokenStream) { continue; }
         else if (d.streamType == MinidumpDir::ThreadListStream)
-            std::cout << "ThreadListStream" << std::endl;
+            verbose(1, "ThreadListStream");
         else if (d.streamType == MinidumpDir::ModuleListStream) {
             int numberOfModules;
 
@@ -35,11 +35,11 @@ int parse_directories(std::vector<MinidumpDir> dirs, Binary *b, FILE *f) {
             //size
             size_module = charBufferToInt(buffer4, 4);
         } else if (d.streamType == MinidumpDir::MemoryListStream)
-            std::cout << "MemoryListStream" << std::endl;
+            verbose(1, "MemoryListStream");
         else if (d.streamType == MinidumpDir::SystemInfoStream)
-            std::cout << "SystemInfoStream" << std::endl;
+            verbose(1, "SystemInfoStream");
         else if (d.streamType == MinidumpDir::ThreadExListStream)
-            std::cout << "ThreadExListStream" << std::endl;
+            verbose(1, "ThreadExListStream");
         else if (d.streamType == MinidumpDir::Memory64ListStream) {
             std::fseek(f, d.rva, SEEK_SET);
             std::fread(buffer8, sizeof(char), 8, f);
@@ -75,9 +75,9 @@ int parse_directories(std::vector<MinidumpDir> dirs, Binary *b, FILE *f) {
                 baseRva += size;
             }
         } else if (d.streamType == MinidumpDir::CommentStreamA)
-            std::cout << "CommentStreamA" << std::endl;
+            verbose(1, "CommentStreamA");
         else if (d.streamType == MinidumpDir::ThreadInfoListStream)
-            std::cout << "ThreadInfoListStream" << std::endl;
+            verbose(1, "ThreadInfoListStream");
     }
     return 0;
 }
