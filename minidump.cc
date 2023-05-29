@@ -55,7 +55,8 @@ int parse_directories(std::vector<MinidumpDir> dirs, Binary *b, FILE *f) {
                 std::fread(buffer8, sizeof(char), 8, f);
                 //size
                 size = charBufferToInt(buffer8, 8);
-                if (start_virtual_address > base_address && start_virtual_address + size < base_address + size_module) {
+                if (start_virtual_address >= base_address &&
+                    start_virtual_address + size <= base_address + size_module) {
                     b->sections.push_back(Section());
                     sec = &b->sections.back();
                     sec->size = size;
