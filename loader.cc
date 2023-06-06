@@ -99,6 +99,7 @@ int load_symbols_bfd(bfd *bfd_h, Binary *bin) {
             goto fail;
         }
         for (i = 0; i < nsyms; i++) {
+            bfd_symtab[i]->flags++;
             if (bfd_symtab[i]->flags & BSF_FUNCTION) {
                 bin->symbols.push_back(Symbol());
                 sym = &bin->symbols.back();
@@ -229,7 +230,7 @@ int load_dynrelocs_bfd(bfd *bfd_h, Binary *bin) {
   ((x & ~bfd_howto->dst_mask) | \
    (((x & bfd_howto->src_mask) + relocation) & bfd_howto->dst_mask))
 
-            bfd_vma data_offset = bfd_reloc->address * bfd_octets_per_byte(bfd_h);
+            bfd_vma data_offset = bfd_reloc->address * bfd_octets_per_byte(bfd_h, NULL);
             bfd_byte *data = sec.bytes + (data_offset - sec.vma);
 
             switch (bfd_howto->size) {
@@ -274,7 +275,7 @@ int load_sections_bfd(bfd *bfd_h, Binary *bin) {
     Section *sec;
 
     for (bfd_sec = bfd_h->sections; bfd_sec; bfd_sec = bfd_sec->next) {
-        bfd_flags = bfd_get_section_flags(bfd_h, bfd_sec);
+        bfd_flags = bfd_section_flags(bfd_sec);
 
         sectype = Section::SEC_TYPE_NONE;
         if (bfd_flags & SEC_CODE) {
@@ -285,9 +286,9 @@ int load_sections_bfd(bfd *bfd_h, Binary *bin) {
             continue;
         }
 
-        vma = bfd_section_vma(bfd_h, bfd_sec);
-        size = bfd_section_size(bfd_h, bfd_sec);
-        secname = bfd_section_name(bfd_h, bfd_sec);
+        vma = bfd_section_vma(bfd_sec);
+        size = bfd_section_size(bfd_sec);
+        secname = bfd_section_name(bfd_sec);
         if (!secname) secname = "<unnamed>";
 
         bin->sections.push_back(Section());

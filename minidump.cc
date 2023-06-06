@@ -19,9 +19,10 @@ int parse_directories(std::vector<MinidumpDir> dirs, Binary *b, FILE *f) {
             d.streamType == MinidumpDir::FunctionTableStream || d.streamType == MinidumpDir::SystemMemoryInfoStream ||
             d.streamType == MinidumpDir::JavaScriptDataStream || d.streamType == MinidumpDir::ProcessVmCountersStream ||
             d.streamType == MinidumpDir::TokenStream) { continue; }
-        else if (d.streamType == MinidumpDir::ThreadListStream)
+        else if (d.streamType == MinidumpDir::ThreadListStream) {
             verbose(1, "ThreadListStream");
-        else if (d.streamType == MinidumpDir::ModuleListStream) {
+            /* XXX: todo */
+        } else if (d.streamType == MinidumpDir::ModuleListStream) {
             int numberOfModules;
 
             std::fseek(f, d.rva, SEEK_SET);
