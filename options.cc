@@ -39,7 +39,7 @@ print_usage(char *prog) {
     printf("  -a <arch>\n");
     printf("     : disassemble as specified instruction architecture (not for pe and elf files)\n");
     for (i = 0; binary_arch_descr[i][0]; i++) {
-        printf("         %-12s %s\n", binary_inst_set[i][0], binary_inst_set[i][1]);
+        printf("         %-12s %s\n", binary_arch_descr[i][0], binary_arch_descr[i][1]);
     }
     printf("  -l : <instruction set>\n");
     printf("     : disassemble with a specific instruction set (not for pe and elf files)\n");
