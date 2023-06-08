@@ -35,6 +35,11 @@ const char *binary_arch_descr[][2] = {
         {"x86",     "x86: Specify x86-16, x86-32 or x86-64 (default x86-64)"},
         {NULL, NULL}};
 
+const char *binary_inst_set[][2] = {
+        {"32", "32 bits"},
+        {"64", "64 bits"},
+        {NULL, NULL}};
+
 static bfd *open_bfd(std::string &fname) {
     static int bfd_inited = 0;
 
@@ -466,27 +471,12 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
     bin->arch = options.binary.arch;
-    bin->bits = options.binary.bits;
     bin->arch_str = std::string(binary_arch_descr[(int) options.binary.arch][0]);
     bin->entry = 0;
 
     if (!bin->bits) {
-        switch (bin->arch) {
-            case Binary::ARCH_X86:
-                bin->bits = 64;
-                break;
-            default:
-                break;
-        }
+        bin->bits = options.binary.inst_set;
     }
-
-    bin->sections.push_back(Section());
-    sec = &bin->sections.back();
-
-    sec->binary = bin;
-    sec->name = std::string("raw");
-    sec->type = Section::SEC_TYPE_CODE;
-    sec->vma = options.binary.base_vma;
 
     f = fopen(fname.c_str(), "rb");
     if (!f) {
@@ -501,17 +491,30 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
 
-    sec->size = (uint64_t) fsize;
-    sec->bytes = (uint8_t *) malloc(fsize);
-    if (!sec->bytes) {
-        print_err("out of memory");
-        goto fail;
-    }
+    // Begin sections
 
-    fseek(f, 0L, SEEK_SET);
-    if (fread(sec->bytes, 1, fsize, f) != (size_t) fsize) {
-        print_err("failed to read binary '%s'", fname.c_str());
-        goto fail;
+    for (int i = 0; i < 25; i++) {
+        bin->sections.push_back(Section());
+        sec = &bin->sections.back();
+
+        sec->binary = bin;
+        sec->type = Section::SEC_TYPE_CODE;
+        sec->name = std::string("raw" + std::to_string(i));
+        //sec->vma = options.binary.base_vma;
+        sec->vma = 0 + i;
+
+        // Read the file
+        sec->size = (uint64_t) fsize - i;
+        sec->bytes = (uint8_t *) malloc(sec->size);
+        if (!sec->bytes) {
+            print_err("out of memory");
+            goto fail;
+        }
+        fseek(f, i, SEEK_SET);
+        if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
+            print_err("failed to read binary '%s'", fname.c_str());
+            goto fail;
+        }
     }
 
     ret = 0;
@@ -580,15 +583,8 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
     dmp.streamDirectoryRva = (int) charBufferToInt(buffer, 4);
 
     if (!bin->bits) {
-        switch (bin->arch) {
-            case Binary::ARCH_X86:
-                bin->bits = 64;
-                break;
-            default:
-                break;
-        }
+        bin->bits = options.binary.inst_set;
     }
-    bin->bits = 32;
 
     for (int i = 0; i < dmp.numberOfStreams; i++) {
         std::fseek(f, (dmp.streamDirectoryRva + i * 12), SEEK_SET);
