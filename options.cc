@@ -43,8 +43,8 @@ print_usage(char *prog) {
     }
     printf("  -l : <instruction set>\n");
     printf("     : disassemble with a specific instruction set (not for pe and elf files)\n");
-    for (i = 0; binary_arch_descr[i][0]; i++) {
-        printf("         %-12s %s\n", binary_arch_descr[i][0], binary_arch_descr[i][1]);
+    for (i = 0; binary_inst_set[i][0]; i++) {
+        printf("         %-12s %s\n", binary_inst_set[i][0], binary_inst_set[i][1]);
     }
     printf("  -f : produce list of function entry points and sizes\n");
     printf("  -b <vma>\n");
