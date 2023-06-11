@@ -471,12 +471,17 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
     bin->arch = options.binary.arch;
+    bin->bits = options.binary.bits;
     bin->arch_str = std::string(binary_arch_descr[(int) options.binary.arch][0]);
     bin->entry = 0;
 
-    if (!bin->bits) {
-        bin->bits = options.binary.inst_set;
-    }
+    bin->sections.push_back(Section());
+    sec = &bin->sections.back();
+
+    sec->binary = bin;
+    sec->name = std::string("raw");
+    sec->type = Section::SEC_TYPE_CODE;
+    sec->vma = options.binary.base_vma;
 
     f = fopen(fname.c_str(), "rb");
     if (!f) {
@@ -491,30 +496,17 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
 
-    // Begin sections
+    sec->size = (uint64_t) fsize - sec->vma;
+    sec->bytes = (uint8_t *) malloc(fsize);
+    if (!sec->bytes) {
+        print_err("out of memory");
+        goto fail;
+    }
 
-    for (int i = 0; i < 25; i++) {
-        bin->sections.push_back(Section());
-        sec = &bin->sections.back();
-
-        sec->binary = bin;
-        sec->type = Section::SEC_TYPE_CODE;
-        sec->name = std::string("raw" + std::to_string(i));
-        //sec->vma = options.binary.base_vma;
-        sec->vma = 0 + i;
-
-        // Read the file
-        sec->size = (uint64_t) fsize - i;
-        sec->bytes = (uint8_t *) malloc(sec->size);
-        if (!sec->bytes) {
-            print_err("out of memory");
-            goto fail;
-        }
-        fseek(f, i, SEEK_SET);
-        if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
-            print_err("failed to read binary '%s'", fname.c_str());
-            goto fail;
-        }
+    fseek(f, sec->vma, SEEK_SET);
+    if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
+        print_err("failed to read binary '%s'", fname.c_str());
+        goto fail;
     }
 
     ret = 0;
