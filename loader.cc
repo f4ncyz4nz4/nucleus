@@ -35,6 +35,11 @@ const char *binary_arch_descr[][2] = {
         {"x86",     "x86: Specify x86-16, x86-32 or x86-64 (default x86-64)"},
         {NULL, NULL}};
 
+const char *binary_inst_set[][2] = {
+        {"32", "32 bits"},
+        {"64", "64 bits"},
+        {NULL, NULL}};
+
 static bfd *open_bfd(std::string &fname) {
     static int bfd_inited = 0;
 
@@ -470,16 +475,6 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
     bin->arch_str = std::string(binary_arch_descr[(int) options.binary.arch][0]);
     bin->entry = 0;
 
-    if (!bin->bits) {
-        switch (bin->arch) {
-            case Binary::ARCH_X86:
-                bin->bits = 64;
-                break;
-            default:
-                break;
-        }
-    }
-
     bin->sections.push_back(Section());
     sec = &bin->sections.back();
 
@@ -501,15 +496,15 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
 
-    sec->size = (uint64_t) fsize;
+    sec->size = (uint64_t) fsize - sec->vma;
     sec->bytes = (uint8_t *) malloc(fsize);
     if (!sec->bytes) {
         print_err("out of memory");
         goto fail;
     }
 
-    fseek(f, 0L, SEEK_SET);
-    if (fread(sec->bytes, 1, fsize, f) != (size_t) fsize) {
+    fseek(f, sec->vma, SEEK_SET);
+    if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
         print_err("failed to read binary '%s'", fname.c_str());
         goto fail;
     }
@@ -580,15 +575,8 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
     dmp.streamDirectoryRva = (int) charBufferToInt(buffer, 4);
 
     if (!bin->bits) {
-        switch (bin->arch) {
-            case Binary::ARCH_X86:
-                bin->bits = 64;
-                break;
-            default:
-                break;
-        }
+        bin->bits = options.binary.inst_set;
     }
-    bin->bits = 32;
 
     for (int i = 0; i < dmp.numberOfStreams; i++) {
         std::fseek(f, (dmp.streamDirectoryRva + i * 12), SEEK_SET);
