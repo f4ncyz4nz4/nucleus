@@ -34,7 +34,6 @@ struct options {
         Binary::BinaryArch arch;
         unsigned bits;
         uint64_t base_vma;
-        int inst_set;
     } binary;
 
     struct {

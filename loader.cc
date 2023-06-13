@@ -504,7 +504,7 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
     }
 
     fseek(f, sec->vma, SEEK_SET);
-    if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
+    if (fread(sec->bytes, 1, sec->size - sec->vma, f) != (size_t) sec->size - sec->vma) {
         print_err("failed to read binary '%s'", fname.c_str());
         goto fail;
     }
@@ -545,7 +545,6 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
     bin->arch = options.binary.arch;
-    bin->bits = options.binary.bits;
     bin->arch_str = std::string(binary_arch_descr[(int) options.binary.arch][0]);
     bin->entry = 0x401070;
 
@@ -575,7 +574,7 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
     dmp.streamDirectoryRva = (int) charBufferToInt(buffer, 4);
 
     if (!bin->bits) {
-        bin->bits = options.binary.inst_set;
+        bin->bits = options.binary.bits;
     }
 
     for (int i = 0; i < dmp.numberOfStreams; i++) {

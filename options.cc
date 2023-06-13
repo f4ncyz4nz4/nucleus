@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
+#include <iostream>
 
 #include "nucleus.h"
 #include "util.h"
@@ -86,7 +87,7 @@ parse_options(int argc, char *argv[]) {
 
     options.binary.type = Binary::BIN_TYPE_AUTO;
     options.binary.arch = Binary::ARCH_NONE;
-    options.binary.inst_set = 32;
+    options.binary.bits = 0;
     options.binary.base_vma = 0;
 
     options.strategy_function.score_function = NULL;
@@ -144,7 +145,12 @@ parse_options(int argc, char *argv[]) {
                 break;
 
             case 'l':
-                options.binary.inst_set = strtoul(optarg, NULL, 0);
+                options.binary.bits = strtoul(optarg, NULL, 0);
+                if (!options.binary.bits) {
+                    printf("ERROR: Unrecognized instruction set");
+                    print_usage(argv[0]);
+                    return -1;
+                }
                 break;
 
             case 'f':
