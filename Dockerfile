@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     libcapstone-dev
 
 # Copy the files into the container
-COPY . /app
+COPY src /app/src
+COPY Makefile /app/Makefile
 
 # Build the project using the Makefile
 RUN make setup
