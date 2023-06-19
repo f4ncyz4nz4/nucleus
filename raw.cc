@@ -24,14 +24,14 @@ int raw_auto_detection(Binary *bin, FILE *f, uint64_t fsize) {
         sec->type = Section::SEC_TYPE_CODE;
 
         sec->size = (uint64_t) fsize - sec->vma;
-        sec->bytes = (uint8_t *) malloc(fsize);
+        sec->bytes = (uint8_t *) malloc(sec->size);
         if (!sec->bytes) {
             print_err("out of memory");
             return -1;
         }
 
         fseek(f, sec->vma, SEEK_SET);
-        if (fread(sec->bytes, 1, sec->size - sec->vma, f) != (size_t) sec->size - sec->vma) {
+        if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
             return -1;
         }
     }

@@ -384,7 +384,7 @@ nucleus_disasm_bb_x86(Binary *bin, DisasmSection *dis, BB *bb) {
 
     if (!ndisassembled) {
         bb->invalid = 1;
-        if (options.binary.type == Binary::BIN_TYPE_RAW) {
+        if (options.offset_roll) {
             invalid_count[std::stoi(dis->section->name.substr(dis->section->name.length() - 2, 2))] += 1;
         }
         bb->end += 1; /* ensure forward progress */

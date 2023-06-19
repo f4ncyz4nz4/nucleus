@@ -15,6 +15,7 @@ struct options {
     int only_code_sections;
     int allow_privileged;
     int summarize_functions;
+    int offset_roll;
 
     struct {
         std::string real;

@@ -459,6 +459,7 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
     int ret;
     long fsize;
     FILE *f;
+    Section *sec;
 
     f = NULL;
 
@@ -488,7 +489,30 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
 
-    if (raw_auto_detection(bin, f, fsize) < 0) goto fail;
+    if (options.offset_roll) {
+        if (raw_auto_detection(bin, f, fsize) < 0) goto fail;
+    } else {
+        bin->sections.push_back(Section());
+        sec = &bin->sections.back();
+
+        sec->binary = bin;
+        sec->name = std::string("raw");
+        sec->type = Section::SEC_TYPE_CODE;
+        sec->vma = options.binary.base_vma;
+
+        sec->size = (uint64_t) fsize - sec->vma;
+        sec->bytes = (uint8_t *) malloc(sec->size);
+        if (!sec->bytes) {
+            print_err("out of memory");
+            return -1;
+        }
+
+        fseek(f, sec->vma, SEEK_SET);
+        if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
+            print_err("failed to read binary '%s'", fname.c_str());
+            goto fail;
+        }
+    }
 
     ret = 0;
     goto cleanup;

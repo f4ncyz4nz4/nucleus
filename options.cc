@@ -50,6 +50,7 @@ print_usage(char *prog) {
     printf("  -f : produce list of function entry points and sizes\n");
     printf("  -b <vma>\n");
     printf("     : binary base vma (only for raw binaries)\n");
+    printf("  -o : pick the best offset (only for raw binaries)\n");
     printf("  -D : disassemble data sections as code\n");
     printf("  -p : allow privileged instructions\n");
     printf("  -g <file>\n");
@@ -70,7 +71,7 @@ print_usage(char *prog) {
 int
 parse_options(int argc, char *argv[]) {
     int i, opt;
-    char optstr[] = "vwhd:t:a:l:fb:Dpg:i:n:e:";
+    char optstr[] = "vwhd:t:a:l:fob:Dpg:i:n:e:";
     extern const char *binary_types_descr[][2];
     extern const char *binary_arch_descr[][2];
     std::string s;
@@ -80,6 +81,7 @@ parse_options(int argc, char *argv[]) {
     options.only_code_sections = 1;
     options.allow_privileged = 0;
     options.summarize_functions = 0;
+    options.offset_roll = 0;
 
     options.nucleuspath.real = str_realpath(std::string(argv[0]));
     options.nucleuspath.dir = str_realpath_dir(std::string(argv[0]));
@@ -158,10 +160,18 @@ parse_options(int argc, char *argv[]) {
                 break;
 
             case 'b':
-                options.binary.base_vma = strtoul(optarg, NULL, 0);
-                if (!options.binary.base_vma) {
-                    printf("ERROR: Invalid binary base address %s\n", optarg);
-                    return -1;
+                if (options.binary.type == Binary::BIN_TYPE_RAW) {
+                    options.binary.base_vma = strtoul(optarg, NULL, 0);
+                    if (!options.binary.base_vma) {
+                        printf("ERROR: Invalid binary base address %s\n", optarg);
+                        return -1;
+                    }
+                }
+                break;
+
+            case 'o':
+                if (options.binary.type == Binary::BIN_TYPE_RAW) {
+                    options.offset_roll = 1;
                 }
                 break;
 
@@ -212,4 +222,3 @@ parse_options(int argc, char *argv[]) {
 
     return 0;
 }
-

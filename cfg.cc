@@ -1160,7 +1160,7 @@ CFG::make_cfg(Binary *bin, std::list<DisasmSection> *disasm) {
 
     this->binary = bin;
 
-    if (options.binary.type == Binary::BIN_TYPE_RAW) {
+    if (options.offset_roll) {
         get_best_offset();
         //auto it = std::next(disasm->begin(), best_offset);
         auto it = std::next(disasm->begin(), best_offset);
