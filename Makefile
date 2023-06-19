@@ -2,8 +2,8 @@ CXX=g++
 CXXFLAGS=-Wall -g -O0 -fpermissive
 LDFLAGS=-lcapstone -lbfd-multiarch
 
-SRC=$(wildcard *.cc)
-OBJ=$(patsubst %.cc, obj/%.o, $(SRC))
+SRC=$(wildcard src/*.cc)
+OBJ=$(patsubst src/%.cc, obj/%.o, $(SRC))
 BIN=nucleus
 
 .PHONY: all clean setup
@@ -15,7 +15,7 @@ $(OBJ): | obj
 obj:
 	@mkdir -p $@
 
-obj/%.o: %.cc %.h
+obj/%.o: src/%.cc src/%.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(BIN): $(OBJ)
