@@ -17,6 +17,7 @@
 #include "log.h"
 #include "options.h"
 #include "minidump.h"
+#include "raw.h"
 
 const char *binary_types_descr[][2] = {
         {"auto", "Try to automatically determine binary format (default)"},
@@ -458,7 +459,6 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
     int ret;
     long fsize;
     FILE *f;
-    Section *sec;
 
     f = NULL;
 
@@ -475,14 +475,6 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
     bin->arch_str = std::string(binary_arch_descr[(int) options.binary.arch][0]);
     bin->entry = 0;
 
-    bin->sections.push_back(Section());
-    sec = &bin->sections.back();
-
-    sec->binary = bin;
-    sec->name = std::string("raw");
-    sec->type = Section::SEC_TYPE_CODE;
-    sec->vma = options.binary.base_vma;
-
     f = fopen(fname.c_str(), "rb");
     if (!f) {
         print_err("failed to open binary '%s' (%s)", fname.c_str(), strerror(errno));
@@ -496,18 +488,7 @@ int load_binary_raw(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
 
-    sec->size = (uint64_t) fsize - sec->vma;
-    sec->bytes = (uint8_t *) malloc(fsize);
-    if (!sec->bytes) {
-        print_err("out of memory");
-        goto fail;
-    }
-
-    fseek(f, sec->vma, SEEK_SET);
-    if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
-        print_err("failed to read binary '%s'", fname.c_str());
-        goto fail;
-    }
+    if (raw_auto_detection(bin, f, fsize) < 0) goto fail;
 
     ret = 0;
     goto cleanup;
@@ -545,7 +526,6 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
         goto fail;
     }
     bin->arch = options.binary.arch;
-    bin->bits = options.binary.bits;
     bin->arch_str = std::string(binary_arch_descr[(int) options.binary.arch][0]);
     bin->entry = 0x401070;
 
@@ -575,7 +555,7 @@ int load_binary_dmp(std::string &fname, Binary *bin, Binary::BinaryType type) {
     dmp.streamDirectoryRva = (int) charBufferToInt(buffer, 4);
 
     if (!bin->bits) {
-        bin->bits = options.binary.inst_set;
+        bin->bits = options.binary.bits;
     }
 
     for (int i = 0; i < dmp.numberOfStreams; i++) {

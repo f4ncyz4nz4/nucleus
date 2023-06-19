@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 #include "loader.h"
+#include <iostream>
+#include "util.h"
+#include "log.h"
 
 class Minidump;
 

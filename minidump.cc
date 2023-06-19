@@ -1,7 +1,4 @@
 #include "minidump.h"
-#include <iostream>
-#include "util.h"
-#include "log.h"
 
 int parse_directories(std::vector<MinidumpDir> dirs, Binary *b, FILE *f) {
     char buffer4[4];
