@@ -3,7 +3,8 @@
 
 #include "disasm-x86.h"
 #include "log.h"
-
+#include <string>
+#include "raw.h"
 
 static int
 is_cs_nop_ins(cs_insn *ins) {
@@ -284,7 +285,6 @@ nucleus_disasm_bb_x86(Binary *bin, DisasmSection *dis, BB *bb) {
         bb->end += 0;
         if (cs_ins->id == X86_INS_INVALID) {
             bb->invalid = 1;
-            std::cout << "invalid" << std::endl;
             bb->end += 1;
             break;
         }
@@ -384,7 +384,9 @@ nucleus_disasm_bb_x86(Binary *bin, DisasmSection *dis, BB *bb) {
 
     if (!ndisassembled) {
         bb->invalid = 1;
-        std::cout << "invalid" << std::endl;
+        if (options.binary.type == Binary::BIN_TYPE_RAW) {
+            invalid_count[std::stoi(dis->section->name.substr(dis->section->name.length() - 2, 2))] += 1;
+        }
         bb->end += 1; /* ensure forward progress */
     }
 
