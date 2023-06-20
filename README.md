@@ -12,6 +12,7 @@ Contents
 
 - [Nucleus](#nucleus)
 - [Contents](#contents)
+  - [What I did](#what-i-did)
   - [Quick start](#quick-start)
   - [Installation](#installation)
     - [Requirements](#requirements)
@@ -19,6 +20,12 @@ Contents
   - [Usage](#usage)
   - [Acknowledgements](#acknowledgements)
   - [License](#license)
+
+## What I did
+**(this section will be deleted after the evaluation)**
+ - commit 1: ...
+ - commit 2: ...
+ - commit 3: ...
 
 ## Quick start
 ```bash
