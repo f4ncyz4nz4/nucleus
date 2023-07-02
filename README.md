@@ -26,14 +26,21 @@ Contents
 ## \[FORENSIC\]What I did
 **(this section will be deleted after the evaluation)**
 ### New features added
-1. Adding support for Mini DuMP file
+1. Adding support for Mini DuMP files
     - Now is possible to launch the command `nucleus -d linear -f -t dmp -e <binary>` to analyze Mini DuMP file (Windows format)
-2. New support for raw file
-    - Now is possible to launch the command `nucleus -d linear -f -t dmp -a x86 -l 32 -e <binary>` to use Nucleus with 20 different offsets, Nucleus will chose the best offset according to the number of error generated during the disassembly phase
+2. New support for raw files
+    - Now is possible to launch the command `nucleus -d linear -f -t dmp -a x86 -l 32 -o -e <binary>` to use Nucleus with 20 different offsets, Nucleus will start disassembly from different offsets, choosing the best offset according to the number of error generated during the disassembly phase
 
 ### Test on different archs
-This dataset analysis has been performed using the Nucleus tool on a dataset sourced from "https://github.com/Cisco-Talos/binary_function_similarity" The analysis involved examining the dataset for each of the six architecture categories available: x32, arm64, x64, mips32, mips64, and arm32. The aim was to gain insights into the dataset's properties across different architectures.
+This dataset analysis has been performed using the Nucleus tool on a dataset sourced from "https://github.com/Cisco-Talos/binary_function_similarity" (I used dataset1).
+
+
+The analysis involved examining the dataset for each of the six architecture categories available: x32, arm64, x64, mips32, mips64, and arm32. The aim was to gain insights into the dataset's properties across different architectures.
+
+
 **For each category, 100 executables were analyzed**
+
+
 I first used a script to extract how many functions were founded by Nucleus, creating a file for each category with this output:
 ```
 IDBs/Dataset-1/openssl/arm64-clang-9-O1_libcrypto.so.3.i64
@@ -44,9 +51,14 @@ IDBs/Dataset-1/openssl/arm64-clang-9-O0_libcrypto.so.3.i64
 679 - 709
 IDBs/Dataset-1/openssl/arm64-clang-7-Os_libcrypto.so.3.i64
 344 - 474
+...etc...
 ```
 Final results:
 ```
+arch
+functions detected - functions to detect
+ratio
+
 arm32
 6190 - 26661
 0.2321
