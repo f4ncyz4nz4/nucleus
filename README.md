@@ -41,7 +41,7 @@ The analysis involved examining the dataset for each of the six architecture cat
 **For each category, 100 executables were analyzed**
 
 
-I first used a script to extract how many functions were founded by Nucleus, creating a file for each category with this output:
+I first used a script to extract how many functions were detected by Nucleus, creating a file for each category with this output:
 ```
 IDBs/Dataset-1/openssl/arm64-clang-9-O1_libcrypto.so.3.i64
 450 - 564
@@ -53,11 +53,12 @@ IDBs/Dataset-1/openssl/arm64-clang-7-Os_libcrypto.so.3.i64
 344 - 474
 ...etc...
 ```
+The I merged results
 Final results:
 ```
-arch
+[arch
 functions detected - functions to detect
-ratio
+ratio]
 
 arm32
 6190 - 26661
@@ -86,12 +87,12 @@ x64
 As we can see from the result Nucleus seems to work an all the tested archs except for `mips64`.
 
 Overall the ranking for the different architectures, starting from the best result, is:
-1. x32
-2. x64
-3. mips32
-4. arm64
-5. arm32
-6. mips64
+1. x32      0.9834
+2. x64      0.9483
+3. mips32   0.8603
+4. arm64    0.8122
+5. arm32    0.2321
+6. mips64   0.0
 
 ## Quick start
 ```bash
