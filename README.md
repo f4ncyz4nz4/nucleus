@@ -14,7 +14,7 @@ Contents
 - [Contents](#contents)
   - [\[FORENSIC\]What I did](#forensicwhat-i-did)
     - [New features added](#new-features-added)
-    - [Test on different archs](#test-on-different-archs)
+    - [Tested on different archs](#tested-on-different-archs)
   - [Quick start](#quick-start)
   - [Installation](#installation)
     - [Requirements](#requirements)
@@ -31,7 +31,7 @@ Contents
 2. New support for raw files
     - Now is possible to launch the command `nucleus -d linear -f -t dmp -a x86 -l 32 -o -e <binary>` to use Nucleus with 20 different offsets, Nucleus will start disassembly from different offsets, choosing the best offset according to the number of error generated during the disassembly phase
 
-### Test on different archs
+### Tested on different archs
 This dataset analysis has been performed using the Nucleus tool on a dataset sourced from "https://github.com/Cisco-Talos/binary_function_similarity" (I used dataset1).
 
 
@@ -54,6 +54,8 @@ IDBs/Dataset-1/openssl/arm64-clang-7-Os_libcrypto.so.3.i64
 ...etc...
 ```
 The I merged results
+
+
 Final results:
 ```
 [arch
@@ -87,12 +89,12 @@ x64
 As we can see from the result Nucleus seems to work an all the tested archs except for `mips64`.
 
 Overall the ranking for the different architectures, starting from the best result, is:
-1. x32      0.9834
-2. x64      0.9483
-3. mips32   0.8603
-4. arm64    0.8122
-5. arm32    0.2321
-6. mips64   0.0
+1. x32 -> 0.9834
+2. x64 -> 0.9483
+3. mips32 -> 0.8603
+4. arm64 -> 0.8122
+5. arm32 -> 0.2321
+6. mips64 -> 0.0
 
 ## Quick start
 ```bash

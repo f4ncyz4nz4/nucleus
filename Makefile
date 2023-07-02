@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-Wall -g -O0 -fpermissive
+CXXFLAGS=-Wall -O2 -DNDEBUG -fpermissive
 LDFLAGS=-lcapstone -lbfd-multiarch
 
 SRC=$(wildcard src/*.cc)
