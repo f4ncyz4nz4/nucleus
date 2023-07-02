@@ -12,7 +12,9 @@ Contents
 
 - [Nucleus](#nucleus)
 - [Contents](#contents)
-  - [What I did](#what-i-did)
+  - [\[FORENSIC\]What I did](#forensicwhat-i-did)
+    - [New features added](#new-features-added)
+    - [Test on different archs](#test-on-different-archs)
   - [Quick start](#quick-start)
   - [Installation](#installation)
     - [Requirements](#requirements)
@@ -21,11 +23,63 @@ Contents
   - [Acknowledgements](#acknowledgements)
   - [License](#license)
 
-## What I did
+## \[FORENSIC\]What I did
 **(this section will be deleted after the evaluation)**
- - commit 1: ...
- - commit 2: ...
- - commit 3: ...
+### New features added
+1. Adding support for Mini DuMP file
+    - Now is possible to launch the command `nucleus -d linear -f -t dmp -e <binary>` to analyze Mini DuMP file (Windows format)
+2. New support for raw file
+    - Now is possible to launch the command `nucleus -d linear -f -t dmp -a x86 -l 32 -e <binary>` to use Nucleus with 20 different offsets, Nucleus will chose the best offset according to the number of error generated during the disassembly phase
+
+### Test on different archs
+This dataset analysis has been performed using the Nucleus tool on a dataset sourced from "https://github.com/Cisco-Talos/binary_function_similarity" The analysis involved examining the dataset for each of the six architecture categories available: x32, arm64, x64, mips32, mips64, and arm32. The aim was to gain insights into the dataset's properties across different architectures.
+**For each category, 100 executables were analyzed**
+I first used a script to extract how many functions were founded by Nucleus, creating a file for each category with this output:
+```
+IDBs/Dataset-1/openssl/arm64-clang-9-O1_libcrypto.so.3.i64
+450 - 564
+IDBs/Dataset-1/openssl/arm64-clang-5.0-Os_libcrypto.so.3.i64
+432 - 547
+IDBs/Dataset-1/openssl/arm64-clang-9-O0_libcrypto.so.3.i64
+679 - 709
+IDBs/Dataset-1/openssl/arm64-clang-7-Os_libcrypto.so.3.i64
+344 - 474
+```
+Final results:
+```
+arm32
+6190 - 26661
+0.2321
+
+arm64
+21109 - 25987
+0.8122
+
+mips32
+18002 - 20923
+0.8603
+
+mips64
+0 - 26998
+0.0
+
+x32
+28541 - 29021
+0.9834
+
+x64
+27182 - 28661
+0.9483
+```
+As we can see from the result Nucleus seems to work an all the tested archs except for `mips64`.
+
+Overall the ranking for the different architectures, starting from the best result, is:
+1. x32
+2. x64
+3. mips32
+4. arm64
+5. arm32
+6. mips64
 
 ## Quick start
 ```bash
