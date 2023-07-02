@@ -125,6 +125,10 @@ To analyse a Mini DuMP file with an arch x86:32 and output a list of function ad
 ```bash
 nucleus -d linear -f -t dmp -a x86 -l 32 -e <binary>
 ```
+To analyse a raw file with an arch x86:32 and the *best offset search* option and output a list of function addresses and sizes, use:
+```bash
+nucleus -d linear -f -t raw -a x86 -l 32 -o -e <binary> 
+```
 To list all the possible commands, use:
 ```bash
 nucleus -h
