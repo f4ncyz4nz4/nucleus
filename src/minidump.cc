@@ -32,9 +32,51 @@ int parse_directories(std::vector<MinidumpDir> dirs, Binary *b, FILE *f) {
             std::fread(buffer4, sizeof(char), 4, f);
             //size
             size_module = charBufferToInt(buffer4, 4);
-        } else if (d.streamType == MinidumpDir::MemoryListStream)
-            verbose(1, "MemoryListStream");
-        else if (d.streamType == MinidumpDir::SystemInfoStream)
+        } else if (d.streamType == MinidumpDir::MemoryListStream) {
+            std::fseek(f, d.rva, SEEK_SET);
+            std::fread(buffer4, sizeof(char), 4, f);
+            numberOfMemoryRanges = charBufferToInt(buffer4, 4);
+
+            for (int j = 0; j < numberOfMemoryRanges; j++) {
+                std::fread(buffer8, sizeof(char), 8, f);
+                // start_mem_range
+                start_virtual_address = charBufferToInt(buffer8, 8);
+
+                if (start_virtual_address < 0x100000000) {
+                    std::fread(buffer4, sizeof(char), 4, f);
+                    // size
+                    size = charBufferToInt(buffer4, 4);
+                    std::fread(buffer4, sizeof(char), 4, f);
+                    // base_rva
+                    baseRva = charBufferToInt(buffer4, 4);
+                } else {
+                    std::fread(buffer8, sizeof(char), 8, f);
+                    // size
+                    size = charBufferToInt(buffer8, 8);
+                    std::fread(buffer8, sizeof(char), 8, f);
+                    // start_virtual_address
+                    baseRva = charBufferToInt(buffer8, 8);
+                }
+                if (start_virtual_address >= base_address &&
+                    start_virtual_address + size <= base_address + size_module) {
+                    b->sections.push_back(Section());
+                    sec = &b->sections.back();
+                    sec->size = size;
+                    sec->binary = b;
+                    sec->name = std::string("dmp" + std::to_string(j));
+                    sec->type = Section::SEC_TYPE_CODE;
+                    sec->bytes = (uint8_t *) malloc(sec->size);
+                    pos = ftell(f);
+                    fseek(f, (long) baseRva, SEEK_SET);
+                    if (fread(sec->bytes, 1, sec->size, f) != (size_t) sec->size) {
+                        print_err("failed to read binary '%s'", b->filename.c_str());
+                        return -1;
+                    }
+                    fseek(f, pos, SEEK_SET);
+                    sec->vma = start_virtual_address;
+                }
+            }
+        } else if (d.streamType == MinidumpDir::SystemInfoStream)
             verbose(1, "SystemInfoStream");
         else if (d.streamType == MinidumpDir::ThreadExListStream)
             verbose(1, "ThreadExListStream");
